@@ -1,7 +1,10 @@
 [Desktop Entry]
 Version=1.0
-Type=Link
-Name=Webpanel
+Type=Application
+Name=Web Panel
 Comment=The webadmin panel for Farming Simulator 25
+Exec="http://"$CONTAINER_IP":7999/index.html?lang=en&username="$WEB_USERNAME"&password="$WEB_PASSWORD"&login=Login"
 Icon=/home/nobody/.icons/FS25/fs25webpanel.png
-URL=http://0.0.0.0:7999
+Path=
+Terminal=false
+StartupNotify=false
