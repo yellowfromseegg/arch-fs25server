@@ -3,7 +3,8 @@
 # Path to the Farming Simulator executable
 FS25_EXEC="$HOME/.fs25server/drive_c/Program Files (x86)/Farming Simulator 2025/FarmingSimulator2025.exe"
 # Path to the installer directory
-INSTALLER_PATH="/opt/fs25/installer/FarmingSimulator2025.exe"
+INSTALL_DIR="/opt/fs25/installer"
+echo "Using installer: $INSTALLER_PATH"
 # Path to the dlc-installer directory
 DLC_DIR="/opt/fs25/dlc"
 # Path to the dlc-install directory
@@ -40,43 +41,128 @@ fi
 cp /opt/fs25/game/Farming\ Simulator\ 2025/VERSION /opt/fs25/config/FarmingSimulator2025/
 
 
-# Check DLCs (list what we found and what is installed)
+# Check which installer file exists
+if [ -f "$INSTALL_DIR/FarmingSimulator2025.exe" ]; then
+    INSTALLER_PATH="$INSTALL_DIR/FarmingSimulator2025.exe"
+elif [ -f "$INSTALL_DIR/Setup.exe" ]; then
+    INSTALLER_PATH="$INSTALL_DIR/Setup.exe"
+else
+    echo "Error: No installer found in $INSTALL_DIR"
+    exit 1
+fi
 
-echo -e "${GREEN}INFO: Scanning ${DLC_DIR} for DLC installers...${NOCOLOR}"
+# Extract an IMG/BIN/ZIP flat into $DLC_DIR once.
+# Creates a stamp file to avoid re-extracting unless the archive changes.
 
 # Enable nullglob to handle no matches gracefully
 shopt -s nullglob
 
+# --- NEW (needed for scan/install) ---
 declare -a supported_names=()
 declare -A seen=()
 declare -a unsupported=()
 
-# Collect installers
+# Track best source per DLC (prefer exe; otherwise archive)
+declare -A dlc_types=()   # name -> exe|archive
+declare -A dlc_files=()   # name -> path
+# --- /NEW ---
+
+
+# Extract an IMG/BIN/ZIP flat into $DLC_DIR only if no matching EXE exists.
+extract_archive_flat_if_needed() {
+  local archive="$1"
+  local base="$(basename "$archive")"
+
+  if ! command -v 7z >/dev/null 2>&1; then
+    echo -e "${RED}ERROR: '7z' (p7zip) is not installed in the container.${NOCOLOR}"
+    return 1
+  fi
+
+  # Derive the DLC "name" (part after prefix, before first underscore)
+  local raw="${base#${DLC_PREFIX}}"
+  local dlc_name="${raw%%_*}"
+
+  # If an EXE for this DLC already exists, skip extracting.
+  if compgen -G "$DLC_DIR/${DLC_PREFIX}${dlc_name}_*.exe" > /dev/null; then
+    echo -e "${GREEN}INFO: EXE for ${dlc_name} already present, skipping extract of ${base}.${NOCOLOR}"
+    return 0
+  fi
+
+  echo -e "${GREEN}INFO: Extracting ${base} into ${DLC_DIR} (flat)...${NOCOLOR}"
+  mkdir -p "$DLC_DIR"
+
+  # Temp dir -> flatten files into $DLC_DIR (no subfolders). Collision-safe moves.
+  local tmp_dir
+  tmp_dir="$(mktemp -d "/tmp/fs25_pre_${dlc_name}_XXXX")" || {
+    echo -e "${RED}ERROR: Cannot create temp dir for ${dlc_name}.${NOCOLOR}"
+    return 1
+  }
+
+  if ! 7z x -y -o"$tmp_dir" -- "$archive" >/dev/null; then
+    echo -e "${RED}ERROR: Extraction failed for ${base}.${NOCOLOR}"
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+
+  while IFS= read -r -d '' f; do
+    b="$(basename "$f")"
+    dest="${DLC_DIR}/${b}"
+    if [ -e "$dest" ]; then
+      n=1
+      while [ -e "${DLC_DIR}/${b%.*}_$n.${b##*.}" ]; do ((n++)); done
+      dest="${DLC_DIR}/${b%.*}_$n.${b##*.}"
+    fi
+    mv "$f" "$dest"
+    chmod u+rw "$dest" 2>/dev/null || true
+  done < <(find "$tmp_dir" -type f -print0)
+
+  rm -rf "$tmp_dir"
+}
+
+
+
+# Pre-pass: extract all archives first (so later scan sees any new EXEs)
+shopt -s nullglob
+for a in "$DLC_DIR"/${DLC_PREFIX}*.img "$DLC_DIR"/${DLC_PREFIX}*.IMG \
+         "$DLC_DIR"/${DLC_PREFIX}*.bin "$DLC_DIR"/${DLC_PREFIX}*.BIN \
+         "$DLC_DIR"/${DLC_PREFIX}*.zip "$DLC_DIR"/${DLC_PREFIX}*.ZIP; do
+  [ -e "$a" ] || continue
+  extract_archive_flat_if_needed "$a"
+done
+
+
+
 for path in "$DLC_DIR"/${DLC_PREFIX}*; do
   [ -e "$path" ] || break
   base="$(basename "$path")"
   ext="${base##*.}"
 
-  case "$ext" in
+  case "${ext}" in
     exe|EXE)
-      # Example: FarmingSimulator25_highlandsFishingPack_1_1_0_0_ESD.exe
-      raw="${base#${DLC_PREFIX}}"   # highlandsFishingPack_1_1_0_0_ESD.exe
-      name="${raw%%_*}"             # highlandsFishingPack
-      if [[ -z "${seen[$name]:-}" ]]; then
-        supported_names+=("$name")
-        seen["$name"]=1
+      raw="${base#${DLC_PREFIX}}"; name="${raw%%_*}"
+      if [[ -z "${seen[$name]:-}" ]]; then supported_names+=("$name"); seen["$name"]=1; fi
+      dlc_types["$name"]="exe"
+      dlc_files["$name"]="$path"
+      ;;
+    img|IMG|bin|BIN|zip|ZIP)
+      raw="${base#${DLC_PREFIX}}"; name="${raw%%_*}"
+      if [[ -z "${seen[$name]:-}" ]]; then supported_names+=("$name"); seen["$name"]=1; fi
+      # only keep archive if we don't already have an exe
+      if [[ "${dlc_types[$name]:-}" != "exe" ]]; then
+        dlc_types["$name"]="archive"
+        dlc_files["$name"]="$path"
       fi
       ;;
-      # zip/bin installers not supported, check and warn user
-    zip|ZIP|bin|BIN)
-      unsupported+=("$base")
-      ;;
     *)
-      # ignore other file types silently
+      # ignore silently
       :
       ;;
   esac
 done
+
+
+# Check DLCs (list what we found and what is installed)
+echo -e "${GREEN}INFO: Scanning ${DLC_DIR} for DLC installers...${NOCOLOR}"
 
 if ((${#supported_names[@]})); then
   echo -e "${GREEN}INFO: DLCs found:${NOCOLOR} ${supported_names[*]}"
@@ -101,13 +187,6 @@ if ((${#supported_names[@]})); then
       echo -e "${YELLOW}INFO: ${name} is not installed yet.${NOCOLOR}"
     fi
   done
-fi
-
-if [ -f /opt/fs25/dlc/FarmingSimulator25_highlandsFishingPack*.exe ]; then
-	echo -e "${GREEN}INFO: Highlands Fishing Pack (ESD) SETUP FOUND!${NOCOLOR}"
-else
-	echo -e "${YELLOW}WARNING: Highlands Fishing Pack Setup not found, do you own it and does it exist in the dlc mount path?${NOCOLOR}"
-	echo -e "${YELLOW}WARNING: If you do not own it ignore this!${NOCOLOR}"
 fi
 
 # it's important to check if the config directory exists on the host mount path. If it doesn't exist, create it.
@@ -210,7 +289,6 @@ else
         echo -e "${RED}ERROR: Game is not installed?${NOCOLOR}" && exit
 fi
 
-# Copy server config
 
 if [ -d ~/.fs25server/drive_c/users/$USER/Documents/My\ Games/FarmingSimulator2025/ ]; then
         cp "/home/nobody/.build/fs25/default_dedicatedServerConfig.xml" ~/.fs25server/drive_c/users/$USER/Documents/My\ Games/FarmingSimulator2025/dedicated_server/dedicatedServerConfig.xml
@@ -254,17 +332,6 @@ if ((${#supported_names[@]})); then
   done
 else
   echo -e "${YELLOW}WARNING: No DLC installers to process.${NOCOLOR}"
-fi
-
-# Highlands Fishing Pack installer
-if [ -f ~/.fs25server/drive_c/users/nobody/Documents/My\ Games/FarmingSimulator2025/pdlc/highlandsFishingPack.dlc ]; then
-	echo -e "${GREEN}INFO: Highlands Fishing Pack is already installed!${NOCOLOR}"
-else
-	if [ -f /opt/fs25/dlc/FarmingSimulator25_highlandsFishingPack*.exe ]; then
-		echo -e "${GREEN}INFO: Installing Highlands Fishing Pack...!${NOCOLOR}"
-		for i in /opt/fs25/dlc/FarmingSimulator25_highlandsFishingPack*.exe; do wine "$i"; done
-		echo -e "${GREEN}INFO: Highlands Fishing Pack is now installed!${NOCOLOR}"
-	fi
 fi
 
 # Check for updates
