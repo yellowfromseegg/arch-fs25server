@@ -23,21 +23,59 @@ DLC_PREFIX="FarmingSimulator25_"
 # Path to the Farming Simulator executable
 FS25_EXEC="$HOME/.fs25server/drive_c/Program Files (x86)/Farming Simulator 2025/FarmingSimulator2025.exe"
 
+# Enable nullglob to handle no matches gracefully
+shopt -s nullglob
+
 # Check which installer file exists
 if [ -f "$INSTALL_DIR/FarmingSimulator2025.exe" ]; then
     INSTALLER_PATH="$INSTALL_DIR/FarmingSimulator2025.exe"
+
 elif [ -f "$INSTALL_DIR/Setup.exe" ]; then
     INSTALLER_PATH="$INSTALL_DIR/Setup.exe"
+
 else
-    echo "${RED}Error: No installer found in $INSTALL_DIR"
-    exit 1
+    echo "Installer not found, trying to extract IMG…"
+
+    # Collect all matching IMG files
+    imgs=( "$INSTALL_DIR"/FarmingSimulator25_*_ESD.img )
+
+    # No matches
+    if ((${#imgs[@]} == 0)); then
+        echo -e "${RED}Error: No FarmingSimulator25_*_ESD.img found in $INSTALL_DIR${NOCOLOR}"
+        exit 1
+    fi
+
+    # More than one match
+    if ((${#imgs[@]} > 1)); then
+        echo -e "${RED}Error: Multiple IMG files found in $INSTALL_DIR:${NOCOLOR}"
+        for f in "${imgs[@]}"; do
+            echo "  $f"
+        done
+        echo -e "${YELLOW}Please keep only one FarmingSimulator25_*_ESD.img file in the installer directory.${NOCOLOR}"
+        exit 1
+    fi
+
+    # Exactly one match -> extract that one
+    IMG_FILE="${imgs[0]}"
+    echo "Using IMG file: $IMG_FILE"
+    7z x "$IMG_FILE" -o"$INSTALL_DIR" -y -bso0 -bsp0
+
+    # After extraction, check again
+    if [ -f "$INSTALL_DIR/FarmingSimulator2025.exe" ]; then
+        INSTALLER_PATH="$INSTALL_DIR/FarmingSimulator2025.exe"
+    elif [ -f "$INSTALL_DIR/Setup.exe" ]; then
+        INSTALLER_PATH="$INSTALL_DIR/Setup.exe"
+    else
+        echo -e "${RED}Error: No installer found in $INSTALL_DIR after extraction${NOCOLOR}"
+        exit 1
+    fi
 fi
+
+
+echo "Installer found: $INSTALLER_PATH"
 
 # Extract an IMG/BIN/ZIP flat into $DLC_DIR once.
 # Skips extraction if a matching EXE already exists.
-
-# Enable nullglob to handle no matches gracefully
-shopt -s nullglob
 
 declare -a supported_names=()
 declare -A seen=()
