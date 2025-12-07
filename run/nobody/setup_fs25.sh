@@ -1,16 +1,21 @@
 #!/bin/bash
+# Debug info/warning/error color
+NOCOLOR='\033[0;0m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
 
 # Path to the game installer directory (where the game installation files are stored)
 INSTALL_DIR="/opt/fs25/installer"
 
 # Path to the config  directory (where the game config files are stored)
-CONFIG_DIR="/opt/fs25/config"
+CONFIG_DIR="/opt/fs25/config/FarmingSimulator2025"
 
 # Path to the DLC installer directory (where downloaded DLCs are stored)
 DLC_DIR="/opt/fs25/dlc"
 
 # Path to the DLC install directory
-PDLC_DIR="${CONFIG_DIR}/FarmingSimulator2025/pdlc"
+PDLC_DIR="${CONFIG_DIR}/pdlc"
 
 # DLC filename prefix (used to identify official DLC packages)
 DLC_PREFIX="FarmingSimulator25_"
@@ -62,7 +67,7 @@ extract_archive_flat_if_needed() {
     return 0
   fi
 
-  echo -e "${GREEN}INFO: Extracting ${base} into ${DLC_DIR} (flat)...${NOCOLOR}"
+  echo -e "${GREEN}INFO: Extracting ${base} into ${DLC_DIR} ...${NOCOLOR}"
   mkdir -p "$DLC_DIR"
 
   # Temp dir -> flatten files into $DLC_DIR (no subfolders). Collision-safe moves.
@@ -81,11 +86,6 @@ extract_archive_flat_if_needed() {
   while IFS= read -r -d '' f; do
     b="$(basename "$f")"
     dest="${DLC_DIR}/${b}"
-    if [ -e "$dest" ]; then
-      n=1
-      while [ -e "${DLC_DIR}/${b%.*}_$n.${b##*.}" ]; do ((n++)); done
-      dest="${DLC_DIR}/${b%.*}_$n.${b##*.}"
-    fi
     mv "$f" "$dest"
     chmod u+rw "$dest" 2>/dev/null || true
   done < <(find "$tmp_dir" -type f -print0)
@@ -161,10 +161,10 @@ fi
 
 # it's important to check if the config directory exists on the host mount path. If it doesn't exist, create it.
 
-if [ -d ${CONFIG_DIR}/FarmingSimulator2025 ]; then
+if [ -d "${CONFIG_DIR}" ]; then
   echo -e "${GREEN}INFO: The host config directory exists, no need to create it!${NOCOLOR}"
 else
-  mkdir -p ${CONFIG_DIR}/FarmingSimulator2025
+  mkdir -p "${CONFIG_DIR}"
 fi
 
 # Required free space in GB
@@ -188,6 +188,7 @@ if [ ! -f "$FS25_EXEC" ]; then
 
   echo -e "${GREEN}INFO: Sufficient space available. Running the installer...${NOCOLOR}"
   wine "$INSTALLER_PATH" "/SILENT" "/NOCANCEL" "/NOICONS"
+  cp /opt/fs25/game/Farming\ Simulator\ 2025/VERSION "${CONFIG_DIR}"
 else
   echo -e "${GREEN}INFO: FarmingSimulator2025.exe already exists. No action needed.${NOCOLOR}"
 fi
@@ -268,7 +269,7 @@ echo -e "${YELLOW}INFO: Checking for updates, if you get warning about gpu drive
 wine ~/.fs25server/drive_c/Program\ Files\ \(x86\)/Farming\ Simulator\ 2025/FarmingSimulator2025.exe
 
 # Replace VERSION File after update / Create VERSION File after first Install -> fix Version to old error for Future DLCs
-cp /opt/fs25/game/Farming\ Simulator\ 2025/VERSION ${CONFIG_DIR}/FarmingSimulator2025/
+cp /opt/fs25/game/Farming\ Simulator\ 2025/VERSION ${CONFIG_DIR}
 
 # Check config if not exist exit
 
