@@ -133,7 +133,6 @@ extract_archive_flat_if_needed() {
 
 # Pre-pass: extract all archives first (so later scan sees any new EXEs)
 for a in "$DLC_DIR"/${DLC_PREFIX}*.img "$DLC_DIR"/${DLC_PREFIX}*.IMG \
-         "$DLC_DIR"/${DLC_PREFIX}*.bin "$DLC_DIR"/${DLC_PREFIX}*.BIN \
          "$DLC_DIR"/${DLC_PREFIX}*.zip "$DLC_DIR"/${DLC_PREFIX}*.ZIP; do
   [ -e "$a" ] || continue
   extract_archive_flat_if_needed "$a"
@@ -156,7 +155,7 @@ for path in "$DLC_DIR"/${DLC_PREFIX}*; do
       dlc_types["$name"]="exe"
       dlc_files["$name"]="$path"
       ;;
-    img|IMG|bin|BIN|zip|ZIP)
+    img|IMG|zip|ZIP)
       raw="${base#${DLC_PREFIX}}"
       name="${raw%%_*}"
       if [[ -z "${seen[$name]:-}" ]]; then
