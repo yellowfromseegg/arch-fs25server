@@ -34,7 +34,7 @@ elif [ -f "$INSTALL_DIR/Setup.exe" ]; then
     INSTALLER_PATH="$INSTALL_DIR/Setup.exe"
 
 else
-    echo "Installer not found, trying to extract IMG…"
+    echo "${YELLOW}Installer not found, trying to extract IMG…"
 
     # Collect all matching IMG files
     imgs=( "$INSTALL_DIR"/FarmingSimulator25_*_ESD.img )
@@ -57,7 +57,7 @@ else
 
     # Exactly one match -> extract that one
     IMG_FILE="${imgs[0]}"
-    echo "Using IMG file: $IMG_FILE"
+    echo "${GREEN}Using IMG file: $IMG_FILE"
     7z x "$IMG_FILE" -o"$INSTALL_DIR" -y -bso0 -bsp0
 
     # After extraction, check again
@@ -72,7 +72,7 @@ else
 fi
 
 
-echo "Installer found: $INSTALLER_PATH"
+echo "${GREEN}Installer found: $INSTALLER_PATH"
 
 # Extract an IMG/BIN/ZIP flat into $DLC_DIR once.
 # Skips extraction if a matching EXE already exists.
