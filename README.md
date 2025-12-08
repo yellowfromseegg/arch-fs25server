@@ -178,7 +178,7 @@ If you just created this user, log out and re-login using your newly created use
 
 ## Downloading the dedicated server
 
-If you purchased the game or already have a product key you can download the game and DLCs on the host machine from GIANTS [download portal](https://eshop.giants-software.com/downloads.php). You now should have a ZIP Archive containing Farming Simulator 25.
+If you purchased the game or already have a product key you can download the game and DLCs on the host machine from GIANTS [download portal](https://eshop.giants-software.com/downloads.php). You now should have a ZIP or IMG Archive containing Farming Simulator 25.
 The DLC files are often just an .exe executable. You can just download them using `curl` or `wget`, we move them into the right place later on.
 
 ## Preparing the needed directories on the host machine
@@ -213,9 +213,10 @@ You will need those values for the docker compose configuration, so make a note 
 ## Unpack and move the installer
 
 You should now unpack the installer and place the unzipped files inside the directory `/mydir/fs25/installer/`, all dlc should be placed in the directory `/mydir/fs25/dlc/` directory. If we start the docker container those directories will be accessed by the container, hence making them available for installation.
+With the new change to .img files the container supports now 7z and automatic ZIP and IMG extraction. Just put your downloaded files in the correct directory and the setup does all the needed magic to extract the files while installation.
 
 ## Downloading and updating the compose file / run command.
-The reccomended way to start the docker containers is using the tool docker compose. You will need to download the `docker-compose.yml` from this repository and store it on your host. You can just leave it in your users home directory or place it somewhere else, as long as you remember where you left it.
+The recommended way to start the docker containers is using the tool docker compose. You will need to download the `docker-compose.yml` from this repository and store it on your host. You can just leave it in your users home directory or place it somewhere else, as long as you remember where you left it.
 
 Open it in some text editor of your choice.
 
@@ -264,7 +265,7 @@ Getting the PUID and GUID is explained [here](https://man7.org/linux/man-pages/m
 |----------|----------|-------|
 | `VNC_PASSWORD` || Password for connecting using the vnc client |
 | `WEB_USERNAME` | `admin` | Username for admin portal at :7999 |
-| `WEB_PASSWORD' | `webpassword` | Password for the admin portal |
+| `WEB_PASSWORD` | `webpassword` | Password for the admin portal |
 | `SERVER_NAME` || Servername that will be shown in the server browser |
 | `SERVER_PORT` | `10823` | Default: 10823, port that the server will listen on |
 | `SERVER_PASSWORD` || The game join password |
