@@ -145,8 +145,9 @@ for path in "$DLC_DIR"/${DLC_PREFIX}*; do
 
   case "${ext}" in
     exe|EXE)
-      raw="${base#${DLC_PREFIX}}"
-      name="${raw%%_*}"
+      # Example: FarmingSimulator25_highlandsFishingPack_1_1_0_0_ESD.exe
+      raw="${base#${DLC_PREFIX}}"   # highlandsFishingPack_1_1_0_0_ESD.exe
+      name="${raw%%_*}"             # highlandsFishingPack
       if [[ -z "${seen[$name]:-}" ]]; then
         supported_names+=("$name")
         seen["$name"]=1
