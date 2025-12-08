@@ -71,7 +71,6 @@ else
     fi
 fi
 
-
 echo "${GREEN}Installer found: $INSTALLER_PATH"
 
 # Extract an IMG/BIN/ZIP flat into $DLC_DIR once.
