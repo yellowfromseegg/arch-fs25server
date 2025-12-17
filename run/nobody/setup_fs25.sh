@@ -8,6 +8,7 @@ RED='\033[0;31m'
 # Path to the game installer directory (where the game installation files are stored)
 INSTALL_DIR="/opt/fs25/installer"
 
+
 # Path to the config  directory (where the game config files are stored)
 CONFIG_DIR="/opt/fs25/config/FarmingSimulator2025"
 
@@ -23,55 +24,66 @@ DLC_PREFIX="FarmingSimulator25_"
 # Path to the Farming Simulator executable
 FS25_EXEC="$HOME/.fs25server/drive_c/Program Files (x86)/Farming Simulator 2025/FarmingSimulator2025.exe"
 
+# set game installed false, will be set to true if we detect the game is already installed
+GAME_INSTALLED=false
+
 # Enable nullglob to handle no matches gracefully
 shopt -s nullglob
 
-# Check which installer file exists
-if [ -f "$INSTALL_DIR/FarmingSimulator2025.exe" ]; then
-    INSTALLER_PATH="$INSTALL_DIR/FarmingSimulator2025.exe"
 
-elif [ -f "$INSTALL_DIR/Setup.exe" ]; then
-    INSTALLER_PATH="$INSTALL_DIR/Setup.exe"
-
-else
-    echo "${YELLOW}Installer not found, trying to extract IMG…"
-
-    # Collect all matching IMG files
-    imgs=( "$INSTALL_DIR"/FarmingSimulator25_*_ESD.img )
-
-    # No matches
-    if ((${#imgs[@]} == 0)); then
-        echo -e "${RED}Error: No FarmingSimulator25_*_ESD.img found in $INSTALL_DIR${NOCOLOR}"
-        exit 1
-    fi
-
-    # More than one match
-    if ((${#imgs[@]} > 1)); then
-        echo -e "${RED}Error: Multiple IMG files found in $INSTALL_DIR:${NOCOLOR}"
-        for f in "${imgs[@]}"; do
-            echo "  $f"
-        done
-        echo -e "${YELLOW}Please keep only one FarmingSimulator25_*_ESD.img file in the installer directory.${NOCOLOR}"
-        exit 1
-    fi
-
-    # Exactly one match -> extract that one
-    IMG_FILE="${imgs[0]}"
-    echo "${GREEN}Using IMG file: $IMG_FILE"
-    7z x "$IMG_FILE" -o"$INSTALL_DIR" -y -bso0 -bsp0
-
-    # After extraction, check again
-    if [ -f "$INSTALL_DIR/FarmingSimulator2025.exe" ]; then
-        INSTALLER_PATH="$INSTALL_DIR/FarmingSimulator2025.exe"
-    elif [ -f "$INSTALL_DIR/Setup.exe" ]; then
-        INSTALLER_PATH="$INSTALL_DIR/Setup.exe"
-    else
-        echo -e "${RED}Error: No installer found in $INSTALL_DIR after extraction${NOCOLOR}"
-        exit 1
-    fi
+# Check if the game is already installed
+if [ -f "$FS25_EXEC" ]; then
+  echo -e "${GREEN}INFO: Game already installed; skipping installer detection.${NOCOLOR}"
+  GAME_INSTALLED=true
 fi
 
-echo "${GREEN}Installer found: $INSTALLER_PATH"
+# Check which installer file exists and extract if needed
+if [ "$GAME_INSTALLED" = false ]; then
+  if [ -f "$INSTALL_DIR/FarmingSimulator2025.exe" ]; then
+      INSTALLER_PATH="$INSTALL_DIR/FarmingSimulator2025.exe"
+
+  elif [ -f "$INSTALL_DIR/Setup.exe" ]; then
+      INSTALLER_PATH="$INSTALL_DIR/Setup.exe"
+
+  else
+      echo "${YELLOW}Installer not found, trying to extract IMG…"
+
+      # Collect all matching IMG files
+      imgs=( "$INSTALL_DIR"/FarmingSimulator25_*_ESD.img )
+
+      # No matches
+      if ((${#imgs[@]} == 0)); then
+          echo -e "${RED}Error: No FarmingSimulator25_*_ESD.img found in $INSTALL_DIR${NOCOLOR}"
+          exit 1
+      fi
+
+      # More than one match
+      if ((${#imgs[@]} > 1)); then
+          echo -e "${RED}Error: Multiple IMG files found in $INSTALL_DIR:${NOCOLOR}"
+          for f in "${imgs[@]}"; do
+              echo "  $f"
+          done
+          echo -e "${YELLOW}Please keep only one FarmingSimulator25_*_ESD.img file in the installer directory.${NOCOLOR}"
+          exit 1
+      fi
+
+      # Exactly one match -> extract that one
+      IMG_FILE="${imgs[0]}"
+      echo "${GREEN}Using IMG file: $IMG_FILE"
+      7z x "$IMG_FILE" -o"$INSTALL_DIR" -y -bso0 -bsp0
+
+      # After extraction, check again
+      if [ -f "$INSTALL_DIR/FarmingSimulator2025.exe" ]; then
+          INSTALLER_PATH="$INSTALL_DIR/FarmingSimulator2025.exe"
+      elif [ -f "$INSTALL_DIR/Setup.exe" ]; then
+          INSTALLER_PATH="$INSTALL_DIR/Setup.exe"
+      else
+          echo -e "${RED}Error: No installer found in $INSTALL_DIR after extraction${NOCOLOR}"
+          exit 1
+      fi
+  fi
+  echo -e "${GREEN}INFO: Installer found: $INSTALLER_PATH${NOCOLOR}"
+fi
 
 # Extract an IMG/BIN/ZIP flat into $DLC_DIR once.
 # Skips extraction if a matching EXE already exists.
@@ -211,7 +223,7 @@ REQUIRED_SPACE=50
 . /usr/local/bin/wine_symlinks.sh
 
 # Check if the executable exists
-if [ ! -f "$FS25_EXEC" ]; then
+if [ "$GAME_INSTALLED" = false ]; then
   echo -e "${GREEN}INFO: FarmingSimulator2025.exe does not exist. Checking available space...${NOCOLOR}"
 
   # Get available free space in /opt/fs25 (in GB)
@@ -222,7 +234,6 @@ if [ ! -f "$FS25_EXEC" ]; then
                 echo -e "${RED}ERROR:Not enough free space in /opt/fs25. Required: $REQUIRED_SPACE GB, Available: $AVAILABLE_SPACE GB${NOCOLOR}"
     exit 1
   fi
-
   echo -e "${GREEN}INFO: Sufficient space available. Running the installer...${NOCOLOR}"
   wine "$INSTALLER_PATH" "/SILENT" "/NOCANCEL" "/NOICONS"
   cp /opt/fs25/game/Farming\ Simulator\ 2025/VERSION "${CONFIG_DIR}"
@@ -297,7 +308,7 @@ if ((${#supported_names[@]})); then
     fi
   done
 else
-  echo -e "${YELLOW}WARNING: No DLC installers to process.${NOCOLOR}"
+  echo -e "${YELLOW}No DLC installers to process.${NOCOLOR}"
 fi
 
 # Check for updates
