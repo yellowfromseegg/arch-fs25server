@@ -254,7 +254,7 @@ Open `http://<ip>:<port>/vnc.html?resize=remote&host=<ip>&port=<port>&&autoconne
 
 It might happen, that the connection fails on first attempt. Go get a coffee and wait a few minutes, before making another attempt, the initial start of the container can take up to 20minutes.
 
-You should now see a desktop environment. Double Click 'Setup' to install FS25. You'll need your FS25 Serial Number now. Wait for the installation process to complete.
+You should now see a desktop environment. Double Click 'Setup' to install FS25. You'll need your FS25 Serial Number now. Wait for the installation process to complete. If you get a warning about gpu drivers make sure to click no! Those are irrelevant for the server.
 After that, click 'Start Server'. This should spawn your game server and also open the web admin portal. You don't need to access it from your host, you can also navigate to `http://<ip>:7999` from another machine. The credentials are those you chose as `WEB_USERNAME` and `WEB_PASSWORD` in the `docker-compose.yml`.
 
 # Environment variables
