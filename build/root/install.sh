@@ -53,7 +53,7 @@ fi
 # install a downgraded version of wine due https://bugs.winehq.org/show_bug.cgi?id=56790
 
 
-pacman -U "https://archive.archlinux.org/packages/w/wine-staging/wine-staging-10.1-1-x86_64.pkg.tar.zst" --noconfirm
+pacman -U "https://archive.archlinux.org/packages/w/wine/wine-11.0-1-x86_64.pkg.tar.zst" --noconfirm
 
 # aur packages
 ####
