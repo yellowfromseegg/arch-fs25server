@@ -1,4 +1,4 @@
-FROM binhex/arch-int-gui:latest
+FROM binhex/arch-int-gui:2025122001
 LABEL org.opencontainers.image.authors="Toetje585"
 LABEL org.opencontainers.image.source="https://github.com/winegameservers/arch-fs25server"
 
