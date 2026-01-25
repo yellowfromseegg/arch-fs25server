@@ -33,6 +33,9 @@ COPY build/rootfs /
 RUN chmod +x /root/*.sh && \
 	/bin/bash /root/install.sh "${RELEASETAG}" "${TARGETARCH}"
 
+# Fix websockify trying to run on wrong python version
+RUN pip install --break-system-packages --force-reinstall websockify
+
 # docker settings
 #################
 
