@@ -250,7 +250,7 @@ After starting the Docker container for the first time, you will need to go thro
 
 This project includes a ready-to-go VNC Client, so you won't need to download anything. You need to know the port under which you'll be able to access VNC. If you didn't change it, it should be `6080`. If you are connected to your host via ssh, get your host's IP so you can access it. Otherwise, you can use `127.0.0.1` as your IP.
 
-Open `http://<ip>:<port>/vnc.html?resize=remote&host=<ip>&port=<port>&&autoconnect=1` in a browser of your choice, while replacing IP and Port with your values. Please nothe, that both of them occur twice! You'll be prompted for a password, which you set as environment variable `VNC_PASSWORD`.
+Open `http://<ip>:<port>/vnc.html?resize=remote&autoconnect=1` in a browser of your choice, while replacing IP and Port with your values. You'll be prompted for a password, which you set as environment variable `VNC_PASSWORD`.
 
 It might happen, that the connection fails on first attempt. Go get a coffee and wait a few minutes, before making another attempt, the initial start of the container can take up to 20minutes.
 
