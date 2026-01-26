@@ -148,6 +148,7 @@ $ docker run -d \
     -e SERVER_CROSSPLAY="true" \
     -e PUID=<UID from user> \
     -e PGID=<PGID from user> \
+    -e FS25_DARKMODE=false \
     toetje585/arch-fs25server
 ```
 # Installation
@@ -281,6 +282,7 @@ Getting the PUID and GUID is explained [here](https://man7.org/linux/man-pages/m
 | `AUTOSTART_SERVER` | `true/false/web_only` | Default: false, if true the server will start automatically with the container, web_only will only start the web panel. Make sure to set this to false before installing or updating the game. |
 | `PUID` || PUID of username used on the local machine |
 | `GUID` || GUID of username used on the local machine |
+| `FS25_DARKMODE` |`false`| Enable Darkmode for the Webinterface; Default:false |
 
 # Discord
 
