@@ -21,6 +21,7 @@ services:
       - SERVER_CROSSPLAY=true
       - AUTOSTART_SERVER=false
       - ENABLE_STARTUP_SCRIPTS=no
+      - FS25_DARKMODE=false
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /opt/fs25/config:/opt/fs25/config
