@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Set FS25_DARKMODE=true to enable, anything else disables
-ENABLE="${FS25_DARKMODE:-false}"
+# Set WEB_DARKMODE=true to enable, anything else disables
+ENABLE="${WEB_DARKMODE:-false}"
 
 GRID_FILE="/opt/fs25/game/Farming Simulator 2025/web_data/css/grid.css"
 MAIN_FILE="/opt/fs25/game/Farming Simulator 2025/web_data/css/main.css"
@@ -10,11 +10,11 @@ MAIN_FILE="/opt/fs25/game/Farming Simulator 2025/web_data/css/main.css"
 GRID_IMPORT='@import url("https://cdn.jsdelivr.net/gh/yellowfromseegg/FS25-Webinterface-DarkMode@main/dark-theme-grid.css");'
 MAIN_IMPORT='@import url("https://cdn.jsdelivr.net/gh/yellowfromseegg/FS25-Webinterface-DarkMode@main/dark-theme-main.css");'
 
-# Markers so we can remove exactly what we added
-GRID_BEGIN='/* FS25_DARKMODE_BEGIN grid */'
-GRID_END='/* FS25_DARKMODE_END grid */'
-MAIN_BEGIN='/* FS25_DARKMODE_BEGIN main */'
-MAIN_END='/* FS25_DARKMODE_END main */'
+# Markers to remove exactly what we added
+GRID_BEGIN='/* WEB_DARKMODE_BEGIN grid */'
+GRID_END='/* WEB_DARKMODE_END grid */'
+MAIN_BEGIN='/* WEB_DARKMODE_BEGIN main */'
+MAIN_END='/* WEB_DARKMODE_END main */'
 
 is_true() {
   case "${1,,}" in
@@ -62,7 +62,7 @@ remove_block() {
   cat "$tmp" > "$file"
   rm -f "$tmp"
 
-  echo "Unpatched: $file"
+  echo "darkmode added to: $file"
 }
 
 
