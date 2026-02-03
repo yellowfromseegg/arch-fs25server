@@ -85,6 +85,7 @@ services:
       - VNC_PASSWORD=<your vnc password>
       - WEB_USERNAME=<dedicated server portal username>
       - WEB_PASSWORD=<dedicated server portal password>
+	  - WEB_DARKMODE=false
       - SERVER_NAME=<your server name>
       - SERVER_PASSWORD=<your game join password>
       - SERVER_ADMIN=<your server admin password>
@@ -134,6 +135,7 @@ $ docker run -d \
     -e VNC_PASSWORD="<your vnc password>" \
     -e WEB_USERNAME="<dedicated server portal username>" \
     -e WEB_PASSWORD="<dedicated server portal password>" \
+    -e WEB_DARKMODE=false \
     -e SERVER_NAME="<your server name>" \
     -e SERVER_PASSWORD="your game join password" \
     -e SERVER_ADMIN="<your server admin password>" \
@@ -266,6 +268,7 @@ Getting the PUID and GUID is explained [here](https://man7.org/linux/man-pages/m
 | `VNC_PASSWORD` || Password for connecting using the vnc client |
 | `WEB_USERNAME` | `admin` | Username for admin portal at :7999 |
 | `WEB_PASSWORD` | `webpassword` | Password for the admin portal |
+| `WEB_DARKMODE` |`false`| Enable Darkmode for the Webinterface, Default:false |
 | `SERVER_NAME` || Servername that will be shown in the server browser |
 | `SERVER_PORT` | `10823` | Default: 10823, port that the server will listen on |
 | `SERVER_PASSWORD` || The game join password |
