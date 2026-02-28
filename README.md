@@ -88,7 +88,7 @@ services:
       - VNC_PASSWORD=<your vnc password>
       - WEB_USERNAME=<dedicated server portal username>
       - WEB_PASSWORD=<dedicated server portal password>
-	  - WEB_DARKMODE=false
+      - WEB_DARKMODE=false
       - SERVER_NAME=<your server name>
       - SERVER_PASSWORD=<your game join password>
       - SERVER_ADMIN=<your server admin password>
