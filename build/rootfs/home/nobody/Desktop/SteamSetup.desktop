@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Steam Setup (Beta)
+Comment=Download Farming Simulator 25 via SteamCMD. Requires STEAM_USER and STEAM_PASS environment variables.
+Exec=xfce4-terminal -T "FS25 Steam Setup" -e /usr/local/bin/setup_fs25_steam.sh
+Icon=/home/nobody/.icons/FS25/fs25setup.png
+Path=
+Terminal=false
+StartupNotify=false

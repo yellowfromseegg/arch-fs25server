@@ -41,7 +41,7 @@ pacman -Sy
 source upd.sh
 
 # define pacman packages
-pacman_packages="wine samba exo garcon thunar xfce4-appfinder tumbler xfce4-panel xfce4-session xfce4-settings xfce4-terminal xfconf xfdesktop xfwm4 xfwm4-themes nodejs npm socat 7zip"
+pacman_packages="wine samba exo garcon thunar xfce4-appfinder tumbler xfce4-panel xfce4-session xfce4-settings xfce4-terminal xfconf xfdesktop xfwm4 nodejs npm socat 7zip lib32-gcc-libs curl"
 
 
 # install compiled packages using pacman
@@ -88,6 +88,23 @@ install_paths=$(echo "${install_paths}" | tr ',' ' ')
 chmod -R 775 ${install_paths}
 
 chmod -R +x /usr/local/bin/*.sh
+
+# Install SteamCMD (not available in Arch repos; download from Valve)
+mkdir -p /usr/local/steamcmd
+curl -sSL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" \
+	| tar -xz -C /usr/local/steamcmd
+chmod +x /usr/local/steamcmd/steamcmd.sh
+ln -sf /usr/local/steamcmd/steamcmd.sh /usr/local/bin/steamcmd
+# Bootstrap SteamCMD so it self-updates on first run during build
+/usr/local/steamcmd/steamcmd.sh +quit || true
+
+# Trust desktop files for Xfce 4.18+ (requires user.xfce.exec extended attribute)
+for f in /home/nobody/Desktop/*.desktop; do
+	setfattr -n user.xfce.exec -v "" "$f"
+done
+
+# Generate a valid machine-id so dbus and xfdesktop start correctly on every container run
+dbus-uuidgen > /etc/machine-id
 
 # create file with contents of here doc, note EOF is NOT quoted to allow us to expand current variable 'install_paths'
 # we use escaping to prevent variable expansion for PUID and PGID, as we want these expanded at runtime of init.sh
@@ -165,7 +182,7 @@ if [ -n "$SERVER_MAP" ]; then
 fi
 
 if [ -n "$SERVER_DIFFICULTY" ]; then
-    sed -i "s/<difficulty>3<\/difficulty>/<difficulty>$SERVER_DIFFICULTY<\/difficulty>/" /home/nobody/.build/fs25/default_dedicatedServerConfig.xml
+    sed -i "s/<economicDifficulty>[0-9]*<\/economicDifficulty>/<economicDifficulty>$SERVER_DIFFICULTY<\/economicDifficulty>/" /home/nobody/.build/fs25/default_dedicatedServerConfig.xml
 fi
 
 if [ -n "$SERVER_PAUSE" ]; then

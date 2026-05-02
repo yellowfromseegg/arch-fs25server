@@ -1,6 +1,11 @@
 services:
   arch-fs25server:
-    image: toetje585/arch-fs25server:latest
+    build:
+      context: .
+      args:
+        RELEASETAG: local-build
+        TARGETARCH: amd64
+    image: arch-fs25server:local
     container_name: arch-fs25server
     environment:
       - VNC_PASSWORD=fs25server
@@ -22,6 +27,13 @@ services:
       - SERVER_CROSSPLAY=true
       - AUTOSTART_SERVER=false
       - ENABLE_STARTUP_SCRIPTS=no
+      # --- Steam Setup (beta) ---
+      # Uncomment and fill in to use the SteamCMD-based download (SteamSetup desktop icon).
+      # The account must own Farming Simulator 25 on Steam.
+      #- STEAM_USER=your_steam_username
+      #- STEAM_PASS=your_steam_password
+      #- STEAM_GUARD_CODE=  # 5-character code from email or authenticator app; leave blank if not needed
+      #- STEAM_APP_ID=2300320  # override if GIANTS changes the dedicated-server App ID
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /opt/fs25/config:/opt/fs25/config
