@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-FILE="js/frontend.js"
+FILE="/opt/fs25/game/Farming Simulator 2025/web_data/js/frontend.js"
 
 BEGIN='\/\* === FS-DEDICATED PATCH BEGIN === \*\/'
 END='\/\* === FS-DEDICATED PATCH END === \*\/'

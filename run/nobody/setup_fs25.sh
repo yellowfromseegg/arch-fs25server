@@ -235,7 +235,7 @@ if [ "$GAME_INSTALLED" = false ]; then
     exit 1
   fi
   echo -e "${GREEN}INFO: Sufficient space available. Running the installer...${NOCOLOR}"
-  wine "$INSTALLER_PATH" "/SILENT" "/NOCANCEL" "/NOICONS"
+  wine "$INSTALLER_PATH"
   cp /opt/fs25/game/Farming\ Simulator\ 2025/VERSION "${CONFIG_DIR}"
 else
   echo -e "${GREEN}INFO: FarmingSimulator2025.exe already exists. No action needed.${NOCOLOR}"
